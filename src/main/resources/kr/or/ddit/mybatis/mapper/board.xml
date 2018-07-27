@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+
+
+<select id="allBoard" resultType="boardVO">
+select * from board
+</select>
+
+<insert id="newBoard" parameterType="boardVO">
+insert into board(BOARD_NUM,BOARD_NAME,BOARD_USE) values(board_seq2.nextval,#{board_name},#{board_use})
+</insert>
+
+<update id="updateBoard" parameterType="boardVO">
+update board set board_name=#{board_name},
+				 board_use=#{board_use}
+		where board_num=#{board_num} 
+</update>
+
+<select id="searchBoard" parameterType="String" resultType="boardVO">
+select * from board
+where BOARD_NAME = #{board_name}
+</select>
+
+<select id="allContents" resultType="contentVO">
+select * from content
+</select>
+
+<select id="getContentList" parameterType="int" resultType="contentVo">
+select * from content where board_num=#{board_num}
+</select>
+
+<select id="searchBoardNum" parameterType="int" resultType="boardVO">
+select * from board
+where BOARD_NUM = #{board_num}
+</select>
+
+<select id="showContents" parameterType="Map" resultType="contentVO">
+SELECT b.cont_num
+            ,LPAD('└', (lv-1)*3,'　')||b.cont_TITLE AS cont_TITLE
+            ,b.std_id
+            ,b.cont_DATE
+            ,b.cont_PA
+            ,b.cont_del
+            ,b.cont_GROUP
+      FROM  (SELECT a.*
+                 ,ROWNUM rn 
+                 FROM (SELECT content.* ,level lv                          
+                        FROM content
+                        WHERE  BOARD_NUM = #{board_num}
+                        START WITH cont_PA IS NULL
+                        CONNECT BY PRIOR cont_Num = cont_PA
+                        ORDER SIBLINGS BY cont_group desc               
+                       ) a
+                )b
+      where  rn BETWEEN (#{page}-1)*#{pageSize}+1 AND #{page}*#{pageSize}
+</select>
+
+<select id="getContent" parameterType="int" resultType="contentVO">
+select * from content where cont_num=#{cont_num}
+</select>
+
+<select id="getContentname" parameterType="String" resultType="contentVO">
+select * from content where cont_title=#{cont_title}
+</select>
+
+<insert id="addComments" parameterType="commentsVO">
+INSERT INTO COMMENTS(COM_DATE,CONT_NUM,COM_DETAIL,COM_DEL,STD_ID,COM_NUM) VALUES(sysdate,#{cont_num},#{com_detail},#{com_del},#{std_id},com_seq.nextval)
+</insert>
+
+<select id="getCom" parameterType="int" resultType="commentsVO">
+select * from comments where com_num=#{com_num}
+</select>
+
+<update id="updateCom" parameterType="commentsVO">
+update comments set com_del =#{com_del} 
+</update>
+
+<select id="getComments" parameterType="int" resultType="commentsVO">
+SELECT * FROM COMMENTS WHERE CONT_NUM=#{cont_num} order by COM_DATE desc
+</select>
+
+<update id="updateContent" parameterType="contentVO">
+update content set cont_title=#{cont_title},
+				   cont_detail=#{cont_detail},
+				   cont_del=#{cont_del},
+				   cont_date=sysdate
+		where cont_num = #{cont_num}
+</update>
+
+<insert id="newContent" parameterType="contentVO">
+insert into content(CONT_DATE,BOARD_NUM,CONT_TITLE, CONT_DETAIL,CONT_GROUP,CONT_DEL,STD_ID,CONT_NUM) 
+values(sysdate, #{board_num}, #{cont_title},#{cont_detail},content_seq.nextval,#{cont_del},#{std_id},content_seq.nextval)
+</insert>
+
+<insert id="newAnswerContent" parameterType="contentVO">
+insert into content(CONT_DATE,BOARD_NUM,CONT_TITLE, CONT_DETAIL,CONT_GROUP,CONT_PA,CONT_DEL,STD_ID,CONT_NUM) 
+values(sysdate, #{board_num}, #{cont_title},#{cont_detail},#{cont_group}, #{cont_pa},#{cont_del},#{std_id},content_seq.nextval)
+</insert>
+
+<insert id="addAttachment" parameterType="attachmentVO">
+insert into attachment(cont_num, att_name, att_path, att_file, att_num) 
+values(#{cont_num}, #{att_name}, #{att_path}, #{att_file}, att_seq.nextval)
+</insert>
+
+<select id="getAttachList" parameterType="int" resultType="attachmentVO">
+select * from attachment where cont_num = #{cont_num}
+</select>
+
+
+
+</mapper>

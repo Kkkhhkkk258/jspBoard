@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="student">
+<select id="getUser" parameterType="String" resultType="studentVO">
+select * from student where std_id=#{userId}
+</select>
+
+<select id="selectAllStudents" resultType="studentVO">
+    select * from student
+  </select>
+  
+  <select id="getStudent" parameterType="int" resultType="studentVO">
+  	select * from student where id = #{userId}
+  </select>
+  
+  <!-- 학생 정보 페이징 조회 -->
+  <select id="getStudentPageList" resultType="studentVO" parameterType="map">
+  	SELECT *
+	FROM
+		(SELECT a.*,ROWNUM rn
+			FROM
+				(SELECT STUDENT.*
+					FROM STUDENT
+					ORDER BY name) a)
+	WHERE rn BETWEEN (#{page}-1)*#{pageSize}+1 AND #{page}*#{pageSize}
+  </select>
+  
+  <!-- 전체 건수 -->
+  <select id="getStudentTotCnt" resultType="Integer">
+  	select count (*) from student
+  </select>
+  
+  <!-- 학생 정보 수정 -->
+  <update id="studentUpdate" parameterType="studentVO">
+  UPDATE STUDENT SET pic=#{pic},
+					picpath=#{picpath},
+					picname=#{picname},
+					addr1=#{addr1},
+					addr2=#{addr2},
+					zipcd=#{zipcd},
+					name=#{name}
+	where id=#{id}
+  </update>
+  
+  <select id="getStudentStdId" parameterType="String" resultType="studentVO">
+  select * from student where std_id=#{std_id}
+  </select>
+
+</mapper>
